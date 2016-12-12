@@ -5,44 +5,15 @@
 #include <avr/io.h>
 
 .section .text
-    .global initData
-initData:
-    ldi r22, 0x00       ; r22 = 0xFF
-    ldi r23, 0x04       ; r23 = 0x00
-    ; pixel 0 
-    sts 0x0100, r23 ; pixel 0 G
-    sts 0x0101, r22 ; pixel 0 R
-    sts 0x0102, r22 ; pixel 0 B
-    sts 0x0103, r22 ; pixel 0 W
-    ; pixel 1
-    sts 0x0104, r22 ; pixel 1 G
-    sts 0x0105, r23 ; pixel 1 R
-    sts 0x0106, r22 ; pixel 1 B
-    sts 0x0107, r22 ; pixel 1 W
-    ; pixel 2 R/G reversed?!?
-    sts 0x0108, r22 ; pixel 2 G
-    sts 0x0109, r22 ; pixel 2 R
-    sts 0x010A, r23 ; pixel 2 B
-    sts 0x010B, r22 ; pixel 2 W
-    ; pixel 3 
-    sts 0x010C, r23 ; pixel 3 G
-    sts 0x010D, r22 ; pixel 3 R
-    sts 0x010E, r22 ; pixel 3 B
-    sts 0x010F, r22 ; pixel 3 W
-    ; pixel 4 
-    sts 0x0110, r22 ; pixel 4 G
-    sts 0x0111, r23 ; pixel 4 R
-    sts 0x0112, r22 ; pixel 4 B
-    sts 0x0113, r22 ; pixel 4 B
-    ; pixel 5 
-    sts 0x0114, r22 ; pixel 4 G
-    sts 0x0115, r22 ; pixel 4 R
-    sts 0x0116, r23 ; pixel 4 B
-    sts 0x0117, r22 ; pixel 4 B
-    ldi r24, 0x06 ; return num of bytes written
-    ret
-    
 
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;; sendNRZ
+    ;  uint8_t* sendNRZ(uint8_t* start_ptr, uint8_t* stop_ptr)
+    ;   start_ptr:  pointer to the address of the 1st byte to be sent
+    ;   stop_ptr:   pointer to the next address AFTER the last byte to be sent 
+    ;   @return pointer at which data transmission stopped (should be = stop_ptr)
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ; Sends NRZ message to the LED ribbon.
     .global sendNRZ
 sendNRZ:
     sbi _SFR_IO_ADDR(DDRB), 5 ; Set bit 5 (LED OUT)
