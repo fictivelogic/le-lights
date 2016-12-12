@@ -1,39 +1,47 @@
 # Samuel Richerd
 # Makefile for le_lights project
 CC=avr-gcc
-CFLAGS=#-shared -fPIC
+CFLAGS= -mmcu=atmega328p
+OUTPUT_NAME= le_lights
 
-LDIR =lib
+LIBDIR=lib
+OUTDIR=bin
 
 _SRC = src/main.c #src/Adafruit_NeoPixel.cpp # $(wildcard src/*.c)
-SRC_OBJ = main.o #Adafruit_NeoPixel.o # $(patsubst src/%.c, %.o, $(_SRC))
+SRC_OBJ =   main.o \
+            sendNRZ.o  #Adafruit_NeoPixel.o # $(patsubst src/%.c, %.o, $(_SRC))
+
+all: $(OUTPUT_NAME)
 
 
-all: src 
-
-$(SRC_OBJ):
-	$(CC) $(CFLAGS) -o $(LDIR)/$@ $(patsubst %.o, src/%.c, $@)
-
-asm: sendNRZ.hex
+$(OUTPUT_NAME): sendNRZ.o
+	$(CC) $(CFLAGS) -o bin/$@ $(patsubst %, src/%.c, $@) lib/sendNRZ.o
 
 
-sendNRZ.elf: src/sendNRZ.S
-	$(CC) -mmcu=atmega328p src/sendNRZ.S -o lib/sendNRZ.elf 
+sendNRZ.o: 
+	$(CC) $(CFLAGS) -c -o $(LIBDIR)/$@ $(patsubst %.o, src/%.S, $@)
 
+#flashable: sendNRZ.o main.o
+#	$(CC) $(CFLAGS) lib/sendNRZ.o lib/main.o -o $@.o  
+
+
+# unused:
 sendNRZ.hex: sendNRZ.elf
 	avr-objcopy -j .text -j .data -O ihex lib/sendNRZ.elf lib/flashable.hex
 
-src: $(SRC_OBJ)
+
+src: $(SRC_OBJ) sendNRZ.o
 
 
 .PHONY: clean
 
 # delete compiled libraries
 clean:
-	rm -f $(LDIR)/*.o *~ 
+	rm -f $(LIBDIR)/*.o 
+	rm -f $(OUTDIR)/$(OUTPUT_NAME)
 
 # Load code onto the arduino
-load: asm
-	avrdude -p m328p -c arduino -P /dev/ttyACM0 -U flash:w:lib/flashable.hex
+load: $(OUTPUT_NAME)
+	avrdude -p m328p -c arduino -P /dev/ttyACM0 -U flash:w:$(OUTDIR)/$(OUTPUT_NAME)
 
 
