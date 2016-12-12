@@ -69,6 +69,7 @@ sendNRZ:
 
 doneWithAllData:
     nop ; sbi _SFR_IO_ADDR(PORTB), 5   ; Turn ON LED!
+    ldi r18, 0xFF
 resetDelay:
     nop
     nop
