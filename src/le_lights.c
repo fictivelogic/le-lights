@@ -14,6 +14,9 @@
 extern uint8_t* sendNRZ(uint8_t* start_ptr, uint8_t* stop_ptr);
 extern uint8_t initData(void);
 
+#define NUM_LEDS        60
+#define LED_INTENSITY   4
+
 typedef struct pixel_struct {
     uint8_t G;
     uint8_t R;
@@ -24,26 +27,26 @@ typedef struct pixel_struct {
 int main(void)
 {
     uint8_t counter = 0;
-    // configure port B as output (on pin 5)
     uint8_t *resp = 0;
-    pixel_t *pixData = (pixel_t *)0x0100;
-    uint8_t pixdat[4] = {0};
+    pixel_t pixData[NUM_LEDS] ;
+    // configure port B as output (on pin 5 and pin 0)
     DDRB = 0x21;
     PORTB = 0x20;
-//    initData();
-    // setup data
-    for (counter = 0; counter != 4; counter++)
+
+    // Setup data:
+    for (counter = 0; counter != NUM_LEDS; counter++)
     {
-        pixdat[counter] = 0xFF;
-        pixData[counter].G = 0x00; //(counter % 4 == 0) ? 0x04 : 0x00;
-        pixData[counter].R = 0x00; //(counter % 4 == 1) ? 0x04 : 0x00;
-        pixData[counter].B = 0x00; //(counter % 4 == 2) ? 0x04 : 0x00;
-        pixData[counter].W = 0xFF; //(counter % 4 == 3) ? 0x04 : 0x00;
+        pixData[counter].G = (counter % 4 == 0) ? LED_INTENSITY : 0x00;
+        pixData[counter].R = (counter % 4 == 1) ? LED_INTENSITY : 0x00;
+        pixData[counter].B = (counter % 4 == 2) ? LED_INTENSITY : 0x00;
+        pixData[counter].W = (counter % 4 == 3) ? LED_INTENSITY : 0x00;
     }
 
-   // while (1) {
-        // send NRZ message ad nauseum
-        sendNRZ((uint8_t*)pixData, (uint8_t*)pixData+4); 
+    // Sends message only once
+    resp = sendNRZ((uint8_t*)pixData, (uint8_t*)&pixData[NUM_LEDS]); 
+    if (resp == pixData+4*NUM_LEDS)
+        PORTB = 0x20;
+
     
     return 0;
 }
