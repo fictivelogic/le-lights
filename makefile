@@ -3,6 +3,8 @@
 CC=avr-gcc
 CFLAGS= -mmcu=atmega328p
 OUTPUT_NAME= le_lights
+AVRDUDE_CONFIG=C:\Program Files (x86)\Arduino\hardware\tools\avr/etc/avrdude.conf
+SERIAL_PORT=COM17 #/dev/ttyACM0
 
 LIBDIR=lib
 OUTDIR=bin
@@ -42,6 +44,6 @@ clean:
 
 # Load code onto the arduino
 load: $(OUTPUT_NAME)
-	avrdude -p m328p -c arduino -P /dev/ttyACM0 -U flash:w:$(OUTDIR)/$(OUTPUT_NAME)
+	avrdude -C "$(AVRDUDE_CONFIG)" -p m328p -c arduino -P $(SERIAL_PORT) -U flash:w:$(OUTDIR)/$(OUTPUT_NAME)
 
 
