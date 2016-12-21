@@ -20,16 +20,16 @@ sendNRZ:
     sbi _SFR_IO_ADDR(DDRB), 0
     ; Grab parameters passed to us:
     ; uint8_t* sendNRZ(uint8_t* start_ptr, uint8_t* stop_ptr)
-    ; Set starting Y address
-    mov YL, r24; uint8_t* start_ptr is in r25:24
-    mov YH, r25
+    ; Set starting X address
+    mov XL, r24; uint8_t* start_ptr is in r25:24
+    mov XH, r25
     ; Set stop address: 0x0110
     mov r20, r23 ; uint8_t* stop_ptr is in r23:22
     mov r19, r22 
   ;
   ; Initialize the other registers:
   ;
-    ld  r17, Y+      ; get first word 
+    ld  r17, X+      ; get first word 
     ; set "constant" registers
     ldi r16, 0x01  
     ldi r21, 0x00
@@ -48,8 +48,8 @@ resetDelay:
     nop
     dec r18
     brne resetDelay
-    ;mov r25, YH 
-    movw r24, YL ; Return value: ending address (not read) (16 bit address)
+    ;mov r25, XH 
+    movw r24, XL ; Return value: ending address (not read) (16 bit address)
     ret
 
 sendBit:
@@ -74,10 +74,10 @@ finishbit:
     brcc regular0
     ldi r18, 0x80 ; reset r18
     nop
-    cp  r19, YL
-    cpc r20, YH
+    cp  r19, XL
+    cpc r20, XH
     breq doneWithAllData
-    ld  r17, Y+
+    ld  r17, X+
     rjmp sendBit
     
 regular0:
