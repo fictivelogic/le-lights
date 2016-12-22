@@ -144,9 +144,9 @@ int main(void)
         // Update pixel index:
         if (going_up == 1)
         {
-            if (pixel_idx == 59)
+            if (pixel_idx == NUM_LEDS-1)
             {
-                pixel_idx = 58;
+                pixel_idx = NUM_LEDS-2;
                 going_up = 0;
             } else {
                 pixel_idx++;
@@ -162,7 +162,7 @@ int main(void)
         }
 
         // delay
-        for(longcount = 0; longcount < 10000; longcount++)
+        for(longcount = 0; longcount < 20000; longcount++)
             {
                 }
     }
