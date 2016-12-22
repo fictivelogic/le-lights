@@ -2,7 +2,23 @@
 # Makefile for le_lights project
 CC=avr-gcc
 CFLAGS= -mmcu=atmega328p
-OUTPUT_NAME= le_lights
+OUTPUT_NAME= le_lights.elf
+
+# Set directories
+ODIR=lib
+SRCDIR=src
+
+#
+# List all C source files (C files must have accompanying H files)
+#
+_C_SRCS=main.c \
+        serial.c
+
+#
+# List All ASM source files
+#
+_ASM_SRCS=sendNRZ.S 
+
 
 # Check OS for Serial port determination and whatnot
 ifeq ($(OS), Windows_NT)
@@ -15,25 +31,34 @@ else
     RM_CMD=rm -f
 endif
 
-LIBDIR=lib
-OUTDIR=bin
 
-_SRC = src/main.c #src/Adafruit_NeoPixel.cpp # $(wildcard src/*.c)
-SRC_OBJ =   main.o \
-            sendNRZ.o  #Adafruit_NeoPixel.o # $(patsubst src/%.c, %.o, $(_SRC))
+
+
+# Add the "src/%" directory prefix
+C_SRCS=$(patsubst %, $(SRCDIR)/%, $(_C_SRCS))
+C_OBJS=$(patsubst %.c, $(ODIR)/%.o, $(_C_SRCS))
+H_SRCS=$(patsubst %.c, $(SRCDIR)/%.h, $(_C_SRCS))
+
+# Add the "src/%" directory prefix
+ASM_SRCS= $(patsubst %, $(SRCDIR)/%, $(_ASM_SRCS))
+ASM_OBJS= $(patsubst %.S, $(ODIR)/%.o, $(_ASM_SRCS))
+
 
 all: $(OUTPUT_NAME)
 
 
-$(OUTPUT_NAME): sendNRZ.o
-	$(CC) $(CFLAGS) -o bin/$@.elf $(patsubst %, src/%.c, $@) lib/sendNRZ.o
+$(OUTPUT_NAME): $(C_OBJS) $(ASM_OBJS)
+	$(CC) $(CFLAGS) -o $@ $^
 
 
-sendNRZ.o: 
-	$(CC) $(CFLAGS) -c -o $(LIBDIR)/$@ $(patsubst %.o, src/%.S, $@)
 
-#flashable: sendNRZ.o main.o
-#	$(CC) $(CFLAGS) lib/sendNRZ.o lib/main.o -o $@.o  
+$(C_OBJS): $(ODIR)/%.o: $(SRCDIR)/%.c $(SRCDIR)/%.h
+	$(CC) $(CFLAGS) -c -o $@ $<
+
+
+#lib/sendNRZ.o: src/sendNRZ.S 
+$(ASM_OBJS): $(ODIR)/%.o: $(SRCDIR)/%.S 
+	$(CC) $(CFLAGS) -c -o $@ $<
 
 
 ## unused:
@@ -45,11 +70,11 @@ sendNRZ.o:
 
 # delete compiled libraries
 clean:
-	$(RM_CMD) $(LIBDIR)\*.o 
-	$(RM_CMD) $(OUTDIR)\$(OUTPUT_NAME)
+	$(RM_CMD) $(ODIR)\*.o 
+	$(RM_CMD) $(OUTPUT_NAME)
 
 # Load code onto the arduino
 load: $(OUTPUT_NAME)
-	avrdude $(AVRDUDE_CONFIG) -p m328p -c arduino -P $(SERIAL_PORT) -U flash:w:$(OUTDIR)/$(OUTPUT_NAME).elf
+	avrdude $(AVRDUDE_CONFIG) -p m328p -c arduino -P $(SERIAL_PORT) -U flash:w:$(OUTPUT_NAME)
 
 
