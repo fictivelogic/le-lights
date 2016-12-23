@@ -24,8 +24,10 @@ void uart_init(void)
 }
 
 void uart_putchar(char c) {
-    while (UCSR0A & _BV(UDRE0) == 0)
-        ;
+    while ((UCSR0A & 0x20) == 0)
+    {
+        asm volatile("nop");
+    }
 
     UDR0 = c;
 }
