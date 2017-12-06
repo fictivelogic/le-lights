@@ -23,7 +23,8 @@ void uart_init(void)
 
 }
 
-void uart_putchar(char c) {
+void uart_putchar(char c) 
+{
     while ((UCSR0A & 0x20) == 0)
     {
         asm volatile("nop");
@@ -31,6 +32,17 @@ void uart_putchar(char c) {
 
     UDR0 = c;
 }
+
+char uart_ischar() 
+{
+    // Returns whether there is a char or not
+    if ((UCSR0A & 0x80) != 0x00)
+        return UDR0;
+    else
+        return 0;
+}
+
+
 
 
 
