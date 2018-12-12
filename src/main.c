@@ -12,10 +12,6 @@
 
 #define COUNT_BLINK     160000
 
-// sendNRZ is implemented in sendNRZ.S (in AVR assembly, for timing considerations)
-extern uint8_t* sendNRZ(uint8_t* start_ptr, uint8_t* stop_ptr);
-//extern uint8_t initData(void);
-
 #define NUM_LEDS            60
 #define LED_INTENSITY       255
 #define DECAY_CONSTANT      3
