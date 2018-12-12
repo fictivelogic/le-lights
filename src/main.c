@@ -16,8 +16,11 @@
 extern uint8_t* sendNRZ(uint8_t* start_ptr, uint8_t* stop_ptr);
 //extern uint8_t initData(void);
 
-#define NUM_LEDS        60
-#define LED_INTENSITY   40
+#define NUM_LEDS            60
+#define LED_INTENSITY       255
+#define DECAY_CONSTANT      3
+#define LOOP_DELAY          20000
+#define LED_SPARKLE_GAIN    4
 
 enum pattern_modes {
      MODE_COLOR_STREAKS,
@@ -91,8 +94,9 @@ int main(void)
     uint8_t offset = 0;
     uint8_t pixel_idx = 0; // Index of pixel being lit-up, 
     uint8_t going_up = 1; // going up or going down
-    uint8_t pattern_mode = MODE_CHRISTMAS_STATIC; // default is color streaks
-    uint8_t led_intensity = 40;
+    uint8_t pattern_mode = MODE_COLOR_STREAKS; // default is color streaks
+    uint8_t led_intensity = LED_INTENSITY;
+    uint8_t prled_intensity = 40;
     uint8_t rx_char = 0;
     // goes 0->1->...->59->58->...->1->0->1...
 
@@ -212,7 +216,7 @@ int main(void)
             case MODE_CHRISTMAS_STREAKS:
                 for (counter = 0; counter != NUM_LEDS; counter++)
                 {
-                    if (counter == pixel_idx) 
+                    if ((offset % LED_SPARKLE_GAIN == 0) && (counter % NUM_LEDS == pixel_idx))
                     {
                         if (counter % 3 == 0)
                         {
@@ -226,18 +230,28 @@ int main(void)
                             pixData[counter].B = 0;
                             pixData[counter].W = 0;
                         } else {
-                            pixData[counter].R = 0;
-                            pixData[counter].G = 0;
-                            pixData[counter].B = 0;
+                            pixData[counter].R = 0;//;led_intensity;
+                            pixData[counter].G = 0;//;led_intensity;
+                            pixData[counter].B = 0;//;led_intensity;
                             pixData[counter].W = led_intensity;
                         }
                     } else {
-                        if (pixData[counter].R != 0)
-                            pixData[counter].R--;
-                        if (pixData[counter].G != 0)
-                            pixData[counter].G--;
-                        if (pixData[counter].W != 0)
-                            pixData[counter].W--;
+                        if (pixData[counter].R >= DECAY_CONSTANT)
+                            pixData[counter].R -= DECAY_CONSTANT;
+                        else
+                            pixData[counter].R = 0;
+                        if (pixData[counter].G >= DECAY_CONSTANT)
+                            pixData[counter].G -= DECAY_CONSTANT;
+                        else
+                            pixData[counter].G = 0;
+                        if (pixData[counter].B >= DECAY_CONSTANT)
+                            pixData[counter].B -= DECAY_CONSTANT;
+                        else
+                            pixData[counter].B = 0;
+                        if (pixData[counter].W >= DECAY_CONSTANT)
+                            pixData[counter].W -= DECAY_CONSTANT;
+                        else
+                            pixData[counter].W = 0;
                     }
                 }
             break;
@@ -262,10 +276,6 @@ int main(void)
                     {
                         pixel_idx = NUM_LEDS-2;
         //                uart_putchar((char)'d');
-        //                uart_putchar((char)((((uint16_t)pixData) & 0xFF00) >> 8));
-        //                uart_putchar((char)((((uint16_t)pixData) & 0x00FF)));
-        //                uart_putchar((char)((((uint16_t)resp) & 0xFF00) >> 8));
-        //                uart_putchar((char)((((uint16_t)resp) & 0x00FF)));
                         going_up = 0;
                     } else {
                         pixel_idx++;
@@ -274,10 +284,6 @@ int main(void)
                     if (pixel_idx == 0)
                     {
         //                uart_putchar((char)'u');
-        //                uart_putchar((char)((((uint16_t)pixData) & 0xFF00) >> 8));
-        //                uart_putchar((char)((((uint16_t)pixData) & 0x00FF)));
-        //                uart_putchar((char)((((uint16_t)resp) & 0xFF00) >> 8));
-        //                uart_putchar((char)((((uint16_t)resp) & 0x00FF)));
                         pixel_idx = 1;
                         going_up = 1;
                     } else {
@@ -286,17 +292,27 @@ int main(void)
                 }
             break;
             case MODE_CHRISTMAS_STREAKS:
-                if (pixel_idx == 0)
-                    pixel_idx = 0x13;
-                pixel_idx >>= 1;
-                if (pixel_idx & 0x01)
-                    pixel_idx ^= 0x8E;
+                if (offset % LED_SPARKLE_GAIN == 1)
+                {
+                    if (pixel_idx == 0)
+                    {
+                        uart_putchar('!');
+                        pixel_idx = 0x13;
+                    }
+                    if (pixel_idx & 0x01)
+                    {
+                        pixel_idx >>= 1;
+                        pixel_idx ^= 0x8E;
+                    } else {
+                        pixel_idx >>= 1;
+                    }
+                }
             break;
         }
 
 
         // delay
-        for(longcount = 0; longcount < 20000; longcount++)
+        for(longcount = 0; longcount < LOOP_DELAY; longcount++)
             {
                 }
     }
