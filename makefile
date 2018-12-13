@@ -17,7 +17,7 @@ _C_SRCS=main.c \
 #
 # List All ASM source files
 #
-_ASM_SRCS=sendNRZ.S 
+_ASM_SRCS=
 
 
 # Check OS for Serial port determination and whatnot
