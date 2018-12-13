@@ -9,22 +9,25 @@
 
 #include <avr/io.h>
 //#include <util/setbaud.h>
+#define BAUD_RATE   150000
+//#define MYUBRR FOSC/(2*BAUD_RATE)-1
 
-void uart_init(void) 
+void sync_serial_init(void) 
 {
-    // 9600 Baud
-    UBRR0H = 0x00;
-    UBRR0L = 103;
+    // 400 kBaud
+    UBRR0H = 0;
+    UBRR0L = 10;
 
-    UCSR0A &= ~(_BV(U2X0)); // Not using 2x rate
+   // UCSR0A &= ~(_BV(U2X0)); // Not using 2x rate
 
-    UCSR0C = _BV(UCSZ01) | _BV(UCSZ00); // 8-bit data
-    UCSR0B = _BV(RXEN0) | _BV(TXEN0); // Enable Rx and Tx
+    UCSR0C = _BV(UMSEL00) | _BV(UCPOL0); // Select Sync-Serial clock, and Rising-edge latched, falling edge changing 
+    UCSR0B = _BV(TXEN0); // Enable only Tx
 
 }
 
-void uart_putchar(char c) 
+void ssio_send(char c) 
 {
+    // Blocking send...
     while ((UCSR0A & 0x20) == 0)
     {
         asm volatile("nop");
@@ -33,14 +36,6 @@ void uart_putchar(char c)
     UDR0 = c;
 }
 
-char uart_ischar() 
-{
-    // Returns whether there is a char or not
-    if ((UCSR0A & 0x80) != 0x00)
-        return UDR0;
-    else
-        return 0;
-}
 
 
 

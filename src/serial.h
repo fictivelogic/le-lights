@@ -3,11 +3,8 @@
 #define SERIAL_H
 
 
-void uart_init(void); // Initialize UART
+void sync_serial_init(void); // Initialize UART
 
-void uart_putchar(char); // Put char into uart
-
-char uart_ischar(void);
-
+void ssio_send(char); // Put char into uart
 
 #endif
